@@ -3,6 +3,7 @@ package sms.example.SMS.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Set;
+import java.util.HashSet;
 
 @Data
 @Entity
@@ -33,7 +34,7 @@ public class Teacher {
         joinColumns = @JoinColumn(name = "teacher_id"),
         inverseJoinColumns = @JoinColumn(name = "course_id")
     )
-    private Set<Course> courses;
+    private Set<Course> courses = new HashSet<>();
 
     public Long getId() {
         return id;

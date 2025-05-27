@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { sectionApi } from '../services/api';
+import './EntityList.css';
 
 const SectionList = () => {
     const navigate = useNavigate();
@@ -90,9 +91,13 @@ const SectionList = () => {
     };
 
     const handleInputChange = (e) => {
+        let value = e.target.value;
+        if (e.target.name === 'grade') {
+            value = value === '' ? '' : parseInt(value, 10);
+        }
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value,
+            [e.target.name]: value,
         });
     };
 
@@ -146,117 +151,117 @@ const SectionList = () => {
     };
 
     return (
-        <div style={{ padding: '20px' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Button
-                    variant="outlined"
-                    startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate('/')}
-                    sx={{ mr: 2 }}
-                >
-                    Back to Dashboard
-                </Button>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleOpen()}
-                >
-                    Add New Section
-                </Button>
-            </Box>
-
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Section Name</TableCell>
-                            <TableCell>Grade</TableCell>
-                            <TableCell>Academic Year</TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {sections.map((section) => (
-                            <TableRow key={section.id}>
-                                <TableCell>{section.sectionName}</TableCell>
-                                <TableCell>{section.grade}</TableCell>
-                                <TableCell>{section.academicYear}</TableCell>
-                                <TableCell>
-                                    <IconButton onClick={() => handleOpen(section)}>
-                                        <EditIcon />
-                                    </IconButton>
-                                    <IconButton onClick={() => handleDelete(section.id)}>
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                <TablePagination
-                    component="div"
-                    count={totalElements}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    rowsPerPage={rowsPerPage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </TableContainer>
-
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>
-                    {selectedSection ? 'Edit Section' : 'Add New Section'}
-                </DialogTitle>
-                <DialogContent>
-                    <TextField
-                        name="sectionName"
-                        label="Section Name"
-                        value={formData.sectionName}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                    />
-                    <TextField
-                        name="grade"
-                        label="Grade"
-                        value={formData.grade}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                    />
-                    <TextField
-                        name="academicYear"
-                        label="Academic Year"
-                        value={formData.academicYear}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleSubmit} color="primary">
-                        {selectedSection ? 'Update' : 'Create'}
+        <div className="entity-list-root">
+            <button className="entity-list-back" onClick={() => navigate('/dashboard')}>
+                &#8592; Back to Dashboard
+            </button>
+            <div className="entity-list-card">
+                <div className="entity-list-header">
+                    <span className="entity-list-title">Sections</span>
+                    <Button
+                        className="entity-list-btn"
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleOpen()}
+                        style={{ background: '#6366f1' }}
+                    >
+                        Add New Section
                     </Button>
-                </DialogActions>
-            </Dialog>
+                </div>
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Section Name</TableCell>
+                                <TableCell>Grade</TableCell>
+                                <TableCell>Academic Year</TableCell>
+                                <TableCell>Actions</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {sections.map((section) => (
+                                <TableRow key={section.id}>
+                                    <TableCell>{section.sectionName}</TableCell>
+                                    <TableCell>{section.grade}</TableCell>
+                                    <TableCell>{section.academicYear}</TableCell>
+                                    <TableCell>
+                                        <IconButton onClick={() => handleOpen(section)}>
+                                            <EditIcon />
+                                        </IconButton>
+                                        <IconButton onClick={() => handleDelete(section.id)}>
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    <TablePagination
+                        component="div"
+                        count={totalElements}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                </TableContainer>
 
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-            >
-                <Alert
+                <Dialog open={open} onClose={handleClose}>
+                    <DialogTitle>
+                        {selectedSection ? 'Edit Section' : 'Add New Section'}
+                    </DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            name="sectionName"
+                            label="Section Name"
+                            value={formData.sectionName}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            required
+                        />
+                        <TextField
+                            name="grade"
+                            label="Grade"
+                            type="number"
+                            value={formData.grade}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            required
+                        />
+                        <TextField
+                            name="academicYear"
+                            label="Academic Year"
+                            value={formData.academicYear}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            required
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose}>Cancel</Button>
+                        <Button onClick={handleSubmit} color="primary">
+                            {selectedSection ? 'Update' : 'Create'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={6000}
                     onClose={handleCloseSnackbar}
-                    severity={snackbar.severity}
-                    sx={{ width: '100%' }}
                 >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
+                    <Alert
+                        onClose={handleCloseSnackbar}
+                        severity={snackbar.severity}
+                        sx={{ width: '100%' }}
+                    >
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
+            </div>
         </div>
     );
 };

@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { courseApi } from '../services/api';
+import './EntityList.css';
 
 const CourseList = () => {
     const navigate = useNavigate();
@@ -148,130 +149,129 @@ const CourseList = () => {
     };
 
     return (
-        <div style={{ padding: '20px' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Button
-                    variant="outlined"
-                    startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate('/')}
-                    sx={{ mr: 2 }}
-                >
-                    Back to Dashboard
-                </Button>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleOpen()}
-                >
-                    Add New Course
-                </Button>
-            </Box>
-
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Course Code</TableCell>
-                            <TableCell>Course Name</TableCell>
-                            <TableCell>Description</TableCell>
-                            <TableCell>Credits</TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {courses.map((course) => (
-                            <TableRow key={course.id}>
-                                <TableCell>{course.courseCode}</TableCell>
-                                <TableCell>{course.courseName}</TableCell>
-                                <TableCell>{course.description}</TableCell>
-                                <TableCell>{course.credits}</TableCell>
-                                <TableCell>
-                                    <IconButton onClick={() => handleOpen(course)}>
-                                        <EditIcon />
-                                    </IconButton>
-                                    <IconButton onClick={() => handleDelete(course.id)}>
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                <TablePagination
-                    component="div"
-                    count={totalElements}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    rowsPerPage={rowsPerPage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </TableContainer>
-
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>
-                    {selectedCourse ? 'Edit Course' : 'Add New Course'}
-                </DialogTitle>
-                <DialogContent>
-                    <TextField
-                        name="courseCode"
-                        label="Course Code"
-                        value={formData.courseCode}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                    />
-                    <TextField
-                        name="courseName"
-                        label="Course Name"
-                        value={formData.courseName}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                    />
-                    <TextField
-                        name="description"
-                        label="Description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        multiline
-                        rows={4}
-                    />
-                    <TextField
-                        name="credits"
-                        label="Credits"
-                        type="number"
-                        value={formData.credits}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleSubmit} color="primary">
-                        {selectedCourse ? 'Update' : 'Create'}
+        <div className="entity-list-root">
+            <button className="entity-list-back" onClick={() => navigate('/dashboard')}>
+                &#8592; Back to Dashboard
+            </button>
+            <div className="entity-list-card">
+                <div className="entity-list-header">
+                    <span className="entity-list-title">Courses</span>
+                    <Button
+                        className="entity-list-btn"
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleOpen()}
+                        style={{ background: '#6366f1' }}
+                    >
+                        Add New Course
                     </Button>
-                </DialogActions>
-            </Dialog>
+                </div>
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Course Code</TableCell>
+                                <TableCell>Course Name</TableCell>
+                                <TableCell>Description</TableCell>
+                                <TableCell>Credits</TableCell>
+                                <TableCell>Actions</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {courses.map((course) => (
+                                <TableRow key={course.id}>
+                                    <TableCell>{course.courseCode}</TableCell>
+                                    <TableCell>{course.courseName}</TableCell>
+                                    <TableCell>{course.description}</TableCell>
+                                    <TableCell>{course.credits}</TableCell>
+                                    <TableCell>
+                                        <IconButton onClick={() => handleOpen(course)}>
+                                            <EditIcon />
+                                        </IconButton>
+                                        <IconButton onClick={() => handleDelete(course.id)}>
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    <TablePagination
+                        component="div"
+                        count={totalElements}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                </TableContainer>
 
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-            >
-                <Alert
+                <Dialog open={open} onClose={handleClose}>
+                    <DialogTitle>
+                        {selectedCourse ? 'Edit Course' : 'Add New Course'}
+                    </DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            name="courseCode"
+                            label="Course Code"
+                            value={formData.courseCode}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            required
+                        />
+                        <TextField
+                            name="courseName"
+                            label="Course Name"
+                            value={formData.courseName}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            required
+                        />
+                        <TextField
+                            name="description"
+                            label="Description"
+                            value={formData.description}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            multiline
+                            rows={4}
+                        />
+                        <TextField
+                            name="credits"
+                            label="Credits"
+                            type="number"
+                            value={formData.credits}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            required
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose}>Cancel</Button>
+                        <Button onClick={handleSubmit} color="primary">
+                            {selectedCourse ? 'Update' : 'Create'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={6000}
                     onClose={handleCloseSnackbar}
-                    severity={snackbar.severity}
-                    sx={{ width: '100%' }}
                 >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
+                    <Alert
+                        onClose={handleCloseSnackbar}
+                        severity={snackbar.severity}
+                        sx={{ width: '100%' }}
+                    >
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
+            </div>
         </div>
     );
 };

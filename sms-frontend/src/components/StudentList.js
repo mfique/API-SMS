@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { studentApi } from '../services/api';
+import './EntityList.css';
 
 const StudentList = () => {
     const navigate = useNavigate();
@@ -152,150 +153,147 @@ const StudentList = () => {
     };
 
     return (
-        <div style={{ padding: '20px' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Button
-                    variant="outlined"
-                    startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate('/')}
-                    sx={{ mr: 2 }}
-                >
-                    Back to Dashboard
-                </Button>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleOpen()}
-                >
-                    Add New Student
-                </Button>
-            </Box>
-
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>First Name</TableCell>
-                            <TableCell>Last Name</TableCell>
-                            <TableCell>Email</TableCell>
-                            <TableCell>Phone Number</TableCell>
-                            <TableCell>Date of Birth</TableCell>
-                            <TableCell>Address</TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {students.map((student) => (
-                            <TableRow key={student.id}>
-                                <TableCell>{student.firstName}</TableCell>
-                                <TableCell>{student.lastName}</TableCell>
-                                <TableCell>{student.email}</TableCell>
-                                <TableCell>{student.phoneNumber}</TableCell>
-                                <TableCell>{student.dateOfBirth}</TableCell>
-                                <TableCell>{student.address}</TableCell>
-                                <TableCell>
-                                    <IconButton onClick={() => handleOpen(student)}>
-                                        <EditIcon />
-                                    </IconButton>
-                                    <IconButton onClick={() => handleDelete(student.id)}>
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                <TablePagination
-                    component="div"
-                    count={totalElements}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    rowsPerPage={rowsPerPage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </TableContainer>
-
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>
-                    {selectedStudent ? 'Edit Student' : 'Add New Student'}
-                </DialogTitle>
-                <DialogContent>
-                    <TextField
-                        name="firstName"
-                        label="First Name"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                    />
-                    <TextField
-                        name="lastName"
-                        label="Last Name"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                    />
-                    <TextField
-                        name="email"
-                        label="Email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                    />
-                    <TextField
-                        name="phoneNumber"
-                        label="Phone Number"
-                        value={formData.phoneNumber}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                    />
-                    <TextField
-                        name="dateOfBirth"
-                        label="Date of Birth"
-                        type="date"
-                        value={formData.dateOfBirth}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        InputLabelProps={{ shrink: true }}
-                    />
-                    <TextField
-                        name="address"
-                        label="Address"
-                        value={formData.address}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleSubmit} color="primary">
-                        {selectedStudent ? 'Update' : 'Create'}
+        <div className="entity-list-root">
+            <button className="entity-list-back" onClick={() => navigate('/dashboard')}>
+                &#8592; Back to Dashboard
+            </button>
+            <div className="entity-list-card">
+                <div className="entity-list-header">
+                    <span className="entity-list-title">Students</span>
+                    <Button
+                        className="entity-list-btn"
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleOpen()}
+                        style={{ background: '#6366f1' }}
+                    >
+                        Add New Student
                     </Button>
-                </DialogActions>
-            </Dialog>
-
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-            >
-                <Alert
+                </div>
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>First Name</TableCell>
+                                <TableCell>Last Name</TableCell>
+                                <TableCell>Email</TableCell>
+                                <TableCell>Phone Number</TableCell>
+                                <TableCell>Date of Birth</TableCell>
+                                <TableCell>Address</TableCell>
+                                <TableCell>Actions</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {students.map((student) => (
+                                <TableRow key={student.id}>
+                                    <TableCell>{student.firstName}</TableCell>
+                                    <TableCell>{student.lastName}</TableCell>
+                                    <TableCell>{student.email}</TableCell>
+                                    <TableCell>{student.phoneNumber}</TableCell>
+                                    <TableCell>{student.dateOfBirth}</TableCell>
+                                    <TableCell>{student.address}</TableCell>
+                                    <TableCell>
+                                        <IconButton onClick={() => handleOpen(student)}>
+                                            <EditIcon />
+                                        </IconButton>
+                                        <IconButton onClick={() => handleDelete(student.id)}>
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    <TablePagination
+                        component="div"
+                        count={totalElements}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                </TableContainer>
+                <Dialog open={open} onClose={handleClose}>
+                    <DialogTitle>
+                        {selectedStudent ? 'Edit Student' : 'Add New Student'}
+                    </DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            name="firstName"
+                            label="First Name"
+                            value={formData.firstName}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            required
+                        />
+                        <TextField
+                            name="lastName"
+                            label="Last Name"
+                            value={formData.lastName}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            required
+                        />
+                        <TextField
+                            name="email"
+                            label="Email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            required
+                        />
+                        <TextField
+                            name="phoneNumber"
+                            label="Phone Number"
+                            value={formData.phoneNumber}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            name="dateOfBirth"
+                            label="Date of Birth"
+                            type="date"
+                            value={formData.dateOfBirth}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            InputLabelProps={{ shrink: true }}
+                        />
+                        <TextField
+                            name="address"
+                            label="Address"
+                            value={formData.address}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose}>Cancel</Button>
+                        <Button onClick={handleSubmit} color="primary">
+                            {selectedStudent ? 'Update' : 'Create'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={6000}
                     onClose={handleCloseSnackbar}
-                    severity={snackbar.severity}
-                    sx={{ width: '100%' }}
                 >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
+                    <Alert
+                        onClose={handleCloseSnackbar}
+                        severity={snackbar.severity}
+                        sx={{ width: '100%' }}
+                    >
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
+            </div>
         </div>
     );
 };

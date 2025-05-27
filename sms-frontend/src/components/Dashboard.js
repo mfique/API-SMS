@@ -1,184 +1,444 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { FaSchool, FaChalkboardTeacher, FaUserGraduate, FaBook, FaSignOutAlt, FaLayerGroup, FaChartBar, FaUserCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import './Dashboard.css';
+import axios from 'axios';
 import {
-    Container,
-    Grid,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
     Paper,
-    Typography,
-    Box,
-    Card,
-    CardContent,
-    CardActions,
     Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    IconButton,
+    TablePagination,
+    Snackbar,
+    Alert,
+    Box,
 } from '@mui/material';
-import {
-    School as SchoolIcon,
-    People as PeopleIcon,
-    Book as BookIcon,
-    Class as ClassIcon,
-} from '@mui/icons-material';
+import { Edit as EditIcon, Delete as DeleteIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { sectionApi } from '../services/api';
 
-const Dashboard = () => {
-    const navigate = useNavigate();
+const Dashboard = ({ onLogout }) => {
+  const navigate = useNavigate();
 
-    const modules = [
-        {
-            title: 'Students',
-            description: 'Manage student records and information',
-            icon: <PeopleIcon sx={{ fontSize: 40 }} />,
-            path: '/students',
-            color: '#2196f3',
-            gradient: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-        },
-        {
-            title: 'Teachers',
-            description: 'Handle teacher profiles and assignments',
-            icon: <SchoolIcon sx={{ fontSize: 40 }} />,
-            path: '/teachers',
-            color: '#4caf50',
-            gradient: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
-        },
-        {
-            title: 'Courses',
-            description: 'Manage course catalog and curriculum',
-            icon: <BookIcon sx={{ fontSize: 40 }} />,
-            path: '/courses',
-            color: '#ff9800',
-            gradient: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-        },
-        {
-            title: 'Sections',
-            description: 'Organize class sections and schedules',
-            icon: <ClassIcon sx={{ fontSize: 40 }} />,
-            path: '/sections',
-            color: '#9c27b0',
-            gradient: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
-        },
-    ];
+  // Fetch stats from backend
+  const [stats, setStats] = useState({
+    schools: 0,
+    teachers: 0,
+    students: 0,
+    courses: 0,
+  });
+  const [courses, setCourses] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [selectedSection, setSelectedSection] = useState(null);
+  const [formData, setFormData] = useState({
+    sectionName: '',
+    grade: '',
+    academicYear: '',
+  });
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalElements, setTotalElements] = useState(0);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
-    return (
-        <Box
-            sx={{
-                minHeight: '100vh',
-                background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%)',
-                py: 4,
-            }}
+  useEffect(() => {
+    // Example: Replace with your real backend endpoints
+    axios.get('http://localhost:8081/api/teachers?page=0&size=1').then(res => setStats(s => ({ ...s, teachers: res.data.totalElements || 0 })));
+    axios.get('http://localhost:8081/api/students?page=0&size=1').then(res => setStats(s => ({ ...s, students: res.data.totalElements || 0 })));
+    axios.get('http://localhost:8081/api/courses?page=0&size=1').then(res => setStats(s => ({ ...s, courses: res.data.totalElements || 0 })));
+    // You can set schools stat as a constant or fetch if you have an endpoint
+    setStats(s => ({ ...s, schools: 1 }));
+
+    // Fetch preview lists
+    axios.get('http://localhost:8081/api/courses?page=0&size=3').then(res => setCourses(res.data.content || []));
+    axios.get('http://localhost:8081/api/sections?page=0&size=3').then(res => setSections(res.data.content || []));
+  }, []);
+
+  const fetchSections = async () => {
+    try {
+      const response = await sectionApi.getAll(page, rowsPerPage);
+      setSections(response.data.content);
+      setTotalElements(response.data.totalElements);
+    } catch (error) {
+      console.error('Error fetching sections:', error);
+      showSnackbar('Error fetching sections', 'error');
+    }
+  };
+
+  useEffect(() => {
+    fetchSections();
+  }, [page, rowsPerPage]);
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({
+      open: true,
+      message,
+      severity
+    });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleOpen = (section = null) => {
+    if (section) {
+      setSelectedSection(section);
+      setFormData(section);
+    } else {
+      setSelectedSection(null);
+      setFormData({
+        sectionName: '',
+        grade: '',
+        academicYear: '',
+      });
+    }
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedSection(null);
+  };
+
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const validateForm = () => {
+    if (!formData.sectionName || !formData.grade || !formData.academicYear) {
+      showSnackbar('Please fill in all required fields', 'error');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    try {
+      if (selectedSection) {
+        await sectionApi.update(selectedSection.id, formData);
+        showSnackbar('Section updated successfully');
+      } else {
+        await sectionApi.create(formData);
+        showSnackbar('Section created successfully');
+      }
+      handleClose();
+      fetchSections();
+    } catch (error) {
+      console.error('Error saving section:', error);
+      showSnackbar('Error saving section', 'error');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this section?')) {
+      try {
+        await sectionApi.delete(id);
+        showSnackbar('Section deleted successfully');
+        fetchSections();
+      } catch (error) {
+        console.error('Error deleting section:', error);
+        showSnackbar('Error deleting section', 'error');
+      }
+    }
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  return (
+    <div className="dashboard-root">
+      {/* Sidebar */}
+      <aside className="dashboard-sidebar">
+        <div className="sidebar-logo">
+          <FaSchool size={32} />
+        </div>
+        <nav className="sidebar-nav">
+          <a href="#" className="active"><FaChartBar /> Dashboard</a>
+          <a href="/students"><FaUserGraduate /> Students</a>
+          <a href="/teachers"><FaChalkboardTeacher /> Teachers</a>
+          <a href="/courses"><FaBook /> Courses</a>
+          <a href="/sections"><FaLayerGroup /> Sections</a>
+          <a href="#"><FaUserCircle /> Assistant</a>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="dashboard-main">
+        {/* Top Bar */}
+        <header className="dashboard-header">
+          <div>
+            <h2>Welcome to School Management System</h2>
+          </div>
+          <div className="dashboard-header-right">
+            <span>School Year 2023 - 2024</span>
+            <button className="logout-btn" onClick={onLogout || (() => {
+              localStorage.clear();
+              window.location.href = '/login';
+            })}>
+              <FaSignOutAlt /> Logout
+            </button>
+          </div>
+        </header>
+
+        {/* Stat Cards */}
+        <section className="dashboard-stats">
+          <div className="stat-card" style={{ background: '#e0e7ff' }}>
+            <div className="stat-icon"><FaLayerGroup /></div>
+            <div>
+              <div className="stat-value">{stats.sections || sections.length}</div>
+              <div className="stat-label">Sections</div>
+            </div>
+          </div>
+          <div className="stat-card" style={{ background: '#f1f5f9' }}>
+            <div className="stat-icon"><FaChalkboardTeacher /></div>
+            <div>
+              <div className="stat-value">{stats.teachers}</div>
+              <div className="stat-label">Teachers</div>
+            </div>
+          </div>
+          <div className="stat-card" style={{ background: '#fef9c3' }}>
+            <div className="stat-icon"><FaUserGraduate /></div>
+            <div>
+              <div className="stat-value">{stats.students}</div>
+              <div className="stat-label">Students</div>
+            </div>
+          </div>
+          <div className="stat-card" style={{ background: '#dcfce7' }}>
+            <div className="stat-icon"><FaBook /></div>
+            <div>
+              <div className="stat-value">{stats.courses}</div>
+              <div className="stat-label">Courses</div>
+            </div>
+          </div>
+        </section>
+
+        {/* Main Grid */}
+        <section className="dashboard-grid">
+          {/* Calendar Attendance */}
+          <div className="dashboard-card calendar-card">
+            <h4>Calendar Attendance</h4>
+            <div className="calendar-years-bar">
+              <div className="calendar-years-bar-bg">
+                <div className="calendar-years-bar-highlight"></div>
+              </div>
+              <div className="calendar-years-labels">
+                {[2019,2020,2021,2022,2023,2024,2025,2026].map(y => (
+                  <span key={y} className={y === 2021 ? 'calendar-year-active' : ''}>{y}</span>
+                ))}
+              </div>
+            </div>
+            <div className="calendar-months-grid">
+              {[
+                ['January', 'February', 'March'],
+                ['April', 'May', 'June'],
+                ['July', 'August', 'September'],
+                ['October', 'November', 'December'],
+              ].map((row, i) => (
+                <div key={i} className="calendar-months-row">
+                  {row.map(month => (
+                    <span
+                      key={month}
+                      className={
+                        month === 'April'
+                          ? 'calendar-month-active'
+                          : 'calendar-month-other'
+                      }
+                    >
+                      {month}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Educational Stage (bar chart) */}
+          <div className="dashboard-card chart-card">
+            <div className="edu-stage-header">
+              <h4>School Performance</h4>
+              <span className="edu-stage-meta">All data in Thousand 2023 - 2024</span>
+            </div>
+            <div className="edu-stage-content">
+              <div className="edu-stage-legend">
+                <div className="edu-stage-legend-row">
+                  <span className="edu-dot edu-dot-primary"></span>
+                  <span className="edu-label">Rwanda Coding Academy</span>
+                  <span className="edu-value edu-value-primary">90</span>
+                </div>
+                <div className="edu-stage-legend-row">
+                  <span className="edu-dot edu-dot-elementary"></span>
+                  <span className="edu-label">King David</span>
+                  <span className="edu-value edu-value-elementary">145</span>
+                </div>
+                <div className="edu-stage-legend-row">
+                  <span className="edu-dot edu-dot-preschool"></span>
+                  <span className="edu-label">BlueLakes</span>
+                  <span className="edu-value edu-value-preschool">88</span>
+                </div>
+              </div>
+              <div className="edu-stage-bar-chart">
+                <div className="edu-bar edu-bar-primary" style={{height: '145px'}}></div>
+                <div className="edu-bar edu-bar-elementary" style={{height: '116px'}}></div>
+                <div className="edu-bar edu-bar-preschool" style={{height: '104px'}}></div>
+                <div className="edu-stage-y-axis">
+                  {[160, 140, 120, 100, 80, 60, 40, 20, 0].map(val => (
+                    <span key={val} style={{bottom: `${(val/160)*100}%`}}>{val}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SectionList Preview */}
+          <div className="dashboard-card activities-card">
+            <div className="activities-header">
+              <h4>Sections</h4>
+              <button className="view-all-btn" onClick={() => navigate('/sections')}>View All</button>
+            </div>
+            <ul>
+              {sections.length === 0 && <li>No sections found.</li>}
+              {sections.map(section => (
+                <li key={section.id}>
+                  {section.sectionName} - Grade {section.grade} ({section.academicYear})
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* CourseList Preview */}
+          <div className="dashboard-card top-students-card">
+            <div className="activities-header">
+              <h4>Courses</h4>
+              <button className="view-all-btn" onClick={() => navigate('/courses')}>View All</button>
+            </div>
+            <ul>
+              {courses.length === 0 && <li>No courses found.</li>}
+              {courses.map(course => (
+                <li key={course.id}>
+                  {course.courseCode} - {course.courseName}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Activities & Events */}
+          <div className="dashboard-card activities-card">
+            <div className="activities-header">
+              <h4>Activities & Events</h4>
+              <button className="view-all-btn outlined-green" onClick={() => navigate('/events')}>View All</button>
+            </div>
+            <ul className="activities-list">
+              {['Inter Class Competition', 'Kwibuka 31', 'Hackathon Pitching'].map((event, idx) => (
+                <li key={event} className="activity-item">
+                  {event}
+                  {idx < 2 && <div className="activity-divider"></div>}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Top Students */}
+          <div className="dashboard-card top-students-card">
+            <div className="top-students-list">
+              {[
+                { name: 'Mugisha Pacifique', percent: '99.88%', place: '1st', color: 'green' },
+                { name: 'Niyitanga Honore', percent: '98.17%', place: '2nd', color: 'purple' },
+                { name: 'Bagabo Bonny', percent: '97.32%', place: '3rd', color: 'yellow' },
+              ].map((student, idx) => (
+                <div key={student.name} className={`student-card student-card-${student.color}`}>
+                  <div className="student-card-bg"></div>
+                  <div className="student-icon"></div>
+                  <div className="student-name">{student.name}</div>
+                  <div className="student-percent">{student.percent}</div>
+                  <div className={`student-place student-place-${student.color}`}>{student.place}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>
+          {selectedSection ? 'Edit Section' : 'Add New Section'}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            name="sectionName"
+            label="Section Name"
+            value={formData.sectionName}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="grade"
+            label="Grade"
+            value={formData.grade}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="academicYear"
+            label="Academic Year"
+            value={formData.academicYear}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleSubmit} color="primary">
+            {selectedSection ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
         >
-            <Container maxWidth="lg">
-                <Grid container spacing={3}>
-                    <Grid item xs={12}>
-                        <Paper
-                            sx={{
-                                p: 3,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                background: 'white',
-                                borderRadius: '16px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                            }}
-                        >
-                            <Typography
-                                variant="h4"
-                                component="h1"
-                                gutterBottom
-                                sx={{
-                                    fontWeight: 700,
-                                    color: '#1a237e',
-                                    textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
-                                }}
-                            >
-                                Dashboard
-                            </Typography>
-                            <Typography
-                                variant="body1"
-                                sx={{ color: '#455a64', fontSize: '1.1rem' }}
-                            >
-                                Welcome to your School Management System dashboard. Select a module to get started.
-                            </Typography>
-                        </Paper>
-                    </Grid>
-
-                    {modules.map((module) => (
-                        <Grid item xs={12} sm={6} md={3} key={module.title}>
-                            <Card
-                                sx={{
-                                    height: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    transition: 'all 0.3s ease',
-                                    background: 'white',
-                                    borderRadius: '16px',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                                    '&:hover': {
-                                        transform: 'translateY(-8px)',
-                                        boxShadow: '0 12px 20px rgba(0,0,0,0.1)',
-                                    },
-                                }}
-                            >
-                                <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            mb: 2,
-                                        }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                width: '50px',
-                                                height: '50px',
-                                                borderRadius: '12px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                background: module.gradient,
-                                                color: 'white',
-                                                mr: 2,
-                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                            }}
-                                        >
-                                            {module.icon}
-                                        </Box>
-                                        <Typography
-                                            variant="h6"
-                                            component="h2"
-                                            sx={{
-                                                fontWeight: 600,
-                                                color: module.color,
-                                            }}
-                                        >
-                                            {module.title}
-                                        </Typography>
-                                    </Box>
-                                    <Typography
-                                        variant="body2"
-                                        sx={{ color: '#546e7a', mb: 2 }}
-                                    >
-                                        {module.description}
-                                    </Typography>
-                                </CardContent>
-                                <CardActions sx={{ p: 2, pt: 0 }}>
-                                    <Button
-                                        size="medium"
-                                        onClick={() => navigate(module.path)}
-                                        sx={{
-                                            color: module.color,
-                                            fontWeight: 600,
-                                            '&:hover': {
-                                                background: `${module.color}10`,
-                                            },
-                                        }}
-                                    >
-                                        View Details
-                                    </Button>
-                                </CardActions>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-            </Container>
-        </Box>
-    );
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </div>
+  );
 };
 
 export default Dashboard; 

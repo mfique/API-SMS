@@ -1,0 +1,83 @@
+.entity-list-root {
+  background: #f3f4f6;
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.entity-list-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #e0e7ff;
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.entity-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.entity-list-title {
+  font-size: 1.5rem;
+  color: #6366f1;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.entity-list-btn {
+  background: #6366f1;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px #e0e7ff;
+}
+
+.entity-list-btn:hover {
+  background: #4338ca;
+}
+
+.entity-list-back {
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  margin-bottom: 0.5rem;
+  margin-right: auto;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px #e0e7ff;
+  display: inline-block;
+}
+
+.entity-list-back:hover {
+  background: #4338ca;
+}
+
+.MuiTableContainer-root {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #e0e7ff;
+}
+
+.MuiTableCell-head {
+  background: #ede9fe;
+  color: #4338ca;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.MuiTableCell-body {
+  font-size: 1rem;
+}
+
+.MuiDialog-paper {
+  border-radius: 16px !important;
+} 
